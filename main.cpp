@@ -3,162 +3,86 @@
 #pragma ide diagnostic ignored "modernize-use-nullptr"
 #pragma ide diagnostic ignored "cert-err34-c"
 /**
- * 链表
+ * 顺序表
  */
+
+#define MAX_SIZE 100
 
 #include <iostream>
 
 typedef int ElemType;
 
-typedef struct LNode {
-    ElemType data;
-    struct LNode *next;
-} LNode, *LinkList;
+typedef struct {
+    ElemType *data;
+    int MaxSize, length;
+} SeqList;
 
 /**
- * 头插法建立单链表
- * @param L
+ * 初始化顺序表
  * @return
  */
-LinkList List_HeadInsert(LinkList &L) {
-    LNode *s;
-    ElemType x;
-    L = (LinkList)malloc(sizeof(LNode));    // 上面定义了LinkList为指针类型，这里就不需要改写为LinkList *了
-    L->next = NULL;
-    scanf("%d", &x);
-
-    while (x != 9999) {
-        s = (LNode *)malloc(sizeof(LNode));
-        s->data = x;
-        s->next = L->next;
-        L->next = s;
-        scanf("%d", &x);
-    }
-    return L;
+SeqList InitList() {
+    ElemType *arr = (ElemType *)malloc(sizeof(SeqList) * MAX_SIZE); // 动态分配
+    SeqList seqList;    // 初始化相关参数
+    seqList.MaxSize = MAX_SIZE;
+    seqList.length = 0;
+    seqList.data = arr;
+    return seqList;
 }
 
 /**
- * 尾插法建立单链表
+ * 插入操作
+ * 需要着重理清位序与索引之间的关系，推荐画图
  * @param L
- * @return
+ * @param i 位序而非下标
+ * @param e 插入元素
+ * @return 是否插入成功
  */
-LinkList List_TailInsert(LinkList &L) {
-    ElemType x;
-    L = (LinkList)malloc(sizeof(LNode));
-    LNode *s, *r = L;   // r为尾结点指针
-    scanf("%d", &x);
-    L->next = NULL;
-
-    while (x != 9999) {
-        s = (LNode *)malloc(sizeof(LNode));
-        s->data = x;
-        r->next = s;
-        r = s;
-        scanf("%d", &x);
-    }
-
-    r->next = NULL;
-    return L;
+bool ListInsert(SeqList &L, int i, ElemType e) {
+    // 检查输入i是够合法
+    // "L.length + 1"表明的是当前已有的数据最大位序，这里不用MaxSize
+    if (i < 1 || i > L.length + 1) return false;
+    if (L.length >= L.MaxSize) return false;    // 检查空间是否已满
+    for (int j = L.length; j >= i; j--) // 从后往前遍历可以省去再次遍历移动的时间
+        L.data[j] = L.data[j-1];
+    L.data[i-1] = e;
+    L.length++; // 表长度+1不要忘了
+    return true;
 }
 
 /**
- * 根据序号获取链表元素
- * @param L
- * @param i i为位置而非索引，例如1, 2, 3, ...
- * @return
- */
-LNode *GetElem(LinkList L, int i) {
-    if (i < 0) {
-        return NULL;
-    }
-
-    LNode *p = L;
-    int x = 0;
-    while (x < i && p != NULL) {
-        p = p->next;
-        x++;
-    }
-
-    return p;
-}
-
-/**
- * 按值查找表结点
- * @param L
- * @param e
- * @return
- */
-LNode *LocateElem(LinkList L, ElemType e) {
-    LNode *p = L->next;
-    while (p != NULL && e != p->data) {
-        p = p->next;
-    }
-    return p;
-}
-
-/**
- * 在第i个位置前面插入一个结点
+ * 删除操作，同ListInsert
  * @param L
  * @param i
  * @param e
+ * @return
  */
-void ListInsert(LinkList &L, int i, ElemType e) {
-    LNode *p = GetElem(L, i-1); // 这里是i-1的意思是插入在第i个结点的前面
-    if (p == NULL) return;
-    LNode *s = (LNode *)malloc(sizeof(LNode));
-    s->data = e;
-    s->next = p->next;
-    p->next = s;
+bool ListDelete(SeqList &L, int i, ElemType &e) {
+    if (i < 1 || i >= L.length + 1) return false;   // 检查i是否合法
+    if (L.length <= 0) return false;    // 如果链表为空则无法删除
+    e = L.data[i - 1];  // 将原始数据保存
+    for (int j = i; j < L.length; j++)
+        L.data[j - 1] = L.data[j];
+    L.length--;
+    return true;
 }
 
 /**
- * 在该结点的前面插入一个值
- * @param i
- * @param e
- */
-void ListInsertWithINode(LNode *i, ElemType e) {
-    LNode *p = (LNode *)malloc(sizeof(LNode));  // 与后插法一致
-    p->next = i->next;
-    i->next = p;
-    p->data = i->data;  // 前后数据互换实现前插，时间复杂度O(1)
-    i->data = e;
-}
-
-/**
- * 删除第第i个位置的结点
+ * 按值查找
  * @param L
- * @param i
  * @param e
+ * @return 返回位序
  */
-void ListDelete(LinkList &L, int i, ElemType &e) {
-    LNode *p = GetElem(L, i-1); // 同ListInsert
-    LNode *q = p->next;
-    p->next = q->next;
-    e = q->data;
-    free(q);
-}
-
-/**
- * 删除该结点i，原理同ListInsertWithINode
- * @param p
- * @param e
- */
-void ListDeleteWithINode(LNode *p, ElemType &e) {
-    e = p->data;
-    LNode *q = p->next;
-    p->data = q->data;
-    p->next = q->next;
-    free(q);
+int LocateElem(SeqList L, ElemType e) {
+    for (int i = 0; i < L.length; i++)
+        if (e == L.data[i])
+            return i + 1;   // 返回的是位序
+    return 0;
 }
 
 int main() {
-    LinkList L;
 
-    std::cout << "请输入插入元素: \n";
-//    L = List_HeadInsert(L);
-    L = List_TailInsert(L);
-    LNode *i2 = GetElem(L, 2);
-    std::cout << "第二项数据为: " << i2->data << std::endl;
+    SeqList seqList = InitList();
 
     return 0;
 }

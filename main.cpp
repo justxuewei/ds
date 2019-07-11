@@ -27,6 +27,12 @@ SeqList InitList() {
     seqList.MaxSize = MAX_SIZE;
     seqList.length = 0;
     seqList.data = arr;
+    ElemType x;
+    scanf("%d", &x);
+    for (; seqList.length < seqList.MaxSize && x != 9999; seqList.length++) {
+        seqList.data[seqList.length] = x;
+        scanf("%d", &x);
+    }
     return seqList;
 }
 
@@ -80,9 +86,71 @@ int LocateElem(SeqList L, ElemType e) {
     return 0;
 }
 
+/**
+ * [Chapter 2.2 综合题6] 有序表去重
+ * @param L
+ * @return
+ */
+bool OrderedListDeduplicate(SeqList &L) {
+    if (L.length < 1) return false;
+    int k = 0;
+    ElemType e = L.data[0];
+    for (int i = 1; i < L.length; i++) {
+        if (e != L.data[i]) {
+            e = L.data[i];
+            L.data[i-k] = L.data[i];
+        } else {
+            k++;
+        }
+    }
+    L.length -= k;
+    return true;
+}
+
+/**
+ * [Chapter 2.2 综合题7] 将有序表合并为一张新表
+ * @param A
+ * @param B
+ * @param C
+ * @return
+ */
+bool OrderedListMerge(SeqList A, SeqList B, SeqList &C) {
+    if (A.length + B.length > C.length) return false;   // 检查C是否有能力装入全部的数据
+    int i = 0, j = 0, k = 0;
+    while (i<A.length && j<B.length) {
+        if (A.data[i] <= B.data[j])
+            C.data[k++] = A.data[i++];
+        else
+            C.data[k++] = B.data[j++];
+    }
+    while (i<A.length) {
+        C.data[k++] = A.data[i++];
+    }
+    while (j<B.length) {
+        C.data[k++] = B.data[j++];
+    }
+    C.length = k;
+    return true;
+}
+
+/**
+ * 打印列表
+ * @param L
+ */
+void ListPrint(SeqList L) {
+    for (int i = 0; i < L.length; i++) {
+        printf("%d\t", L.data[i]);
+    }
+    printf("\n");
+}
+
 int main() {
 
+    printf("请输入顺序表序列（输入9999以停止）: \n");
     SeqList seqList = InitList();
+    ListPrint(seqList);
+    OrderedListDeduplicate(seqList);
+    ListPrint(seqList);
 
     return 0;
 }

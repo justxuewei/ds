@@ -134,6 +134,64 @@ bool OrderedListMerge(SeqList A, SeqList B, SeqList &C) {
 }
 
 /**
+ * [Chapter 2.2 综合题8] 将顺序表调换位置
+ * 比如如果想调换整个数组的位置则a传入0，b传入最后一个元素的索引位置
+ * @param L
+ * @param a 起始索引位置
+ * @param b 结束索引位置
+ */
+void Reverse(SeqList &L, int a, int b) {
+    if (a >= b || b >= L.length) {  // 检查参数
+        return;
+    }
+    for (int i = 0; i <= (a+b)/2; i++) {
+        ElemType temp = L.data[i];
+        L.data[i] = L.data[b-i];
+        L.data[b-i] = temp;
+    }
+}
+
+/**
+ * [Chapter 2.2 综合题8]
+ * @param L
+ * @param m
+ * @param n
+ */
+void Exchange(SeqList &L, int m, int n) {
+    Reverse(L, 0, m+n-1);
+    Reverse(L, 0, n-1);
+    Reverse(L, n, m-1);
+}
+
+/**
+ * [Chapter 2.2 综合题9]
+ * @param L
+ * @param x
+ */
+void SearchExchangeInsert(SeqList &L, ElemType x) {
+    // 要求查找速度最快所以使用二分法查找
+    int low = 0, high = L.length - 1, mid = 0;
+    while (low <= high) {   // 注意这里是小于等于
+        mid = (low+high) / 2;
+        if (L.data[mid] == x) break;
+        else if (L.data[mid] > x) high = mid - 1;
+        else low = mid + 1;
+    }
+    // 确定中间的数是否是我们找的
+    // 另外如果找的数正好是最后一个也不会参与与后一个数的置换
+    if (L.data[mid] == x && mid != high - 1) {
+        ElemType temp = L.data[mid];
+        L.data[mid] = L.data[mid + 1];
+        L.data[mid + 1] = temp;
+    }
+    if (low < high) {   // 防止查到了但是最后一个的情况
+        int i = L.length - 1;
+        for (; i > high; i++) L.data[i+1] = L.data[i];  // 注意这里应该是要大于high，这样才能保证数组是有序的
+        L.data[i+1] = x;
+    }
+}
+
+/**
  * 打印列表
  * @param L
  */
